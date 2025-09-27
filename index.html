@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>You're Invited</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
-    
     body {
       font-family: 'Cormorant Garamond', serif;
-      overflow-y: hidden;
+      /* IMPORTANT: don't force overflow:hidden here — allow JS to control interaction */
       overscroll-behavior: none;
     }
     html { scroll-behavior: smooth; }
@@ -22,6 +21,7 @@
       opacity: 0.8;
       transform: scale(0.8);
       animation-timing-function: ease-out;
+      pointer-events: none;
     }
 
     .heart {
@@ -50,6 +50,13 @@
       background: linear-gradient(135deg, #ffe6f0 0%, #fff0f5 100%);
       overflow: hidden;
     }
+
+    /* small helper while auto-scrolling to show pointer blocking class if needed */
+    .blocked-pointer {
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
   </style>
 </head>
 <body class="bg-stone-50 text-stone-700 leading-relaxed antialiased">
@@ -76,6 +83,7 @@
 
   <!-- Background Music -->
   <audio id="bg-music">
+    <!-- replace the src with your hosted file; mobile will allow play on user gesture -->
     <source src="./Ed Sheeran - Perfect.mp3" type="audio/mpeg">
     Your browser does not support the audio tag.
   </audio>
@@ -109,137 +117,99 @@
     <p class="text-lg md:text-xl font-normal tracking-wide">We can't wait to share this beautiful moment with you.</p>
     <p class="text-lg md:text-xl font-normal tracking-wide mt-4">Formal invitation to follow.</p>
 
-    <pre>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    </pre>
-    
-    <div class="h-96 w-full"></div> 
+    <div class="h-96 w-full"></div>
   </div>
 
   <script>
-  window.addEventListener('load', () => {
-    const startButton = document.getElementById('startButton');
-    const startOverlay = document.getElementById('start-overlay');
-    const invitationContainer = document.getElementById('invitation-container');
-    const bgMusic = document.getElementById('bg-music');
-    let isScrolling = false;
-    let totalHeight;
+    window.addEventListener('load', () => {
+      const startButton = document.getElementById('startButton');
+      const startOverlay = document.getElementById('start-overlay');
+      const invitationContainer = document.getElementById('invitation-container');
+      const bgMusic = document.getElementById('bg-music');
 
-    const scrollSpeed = 0.5; // pixels per frame
+      let isScrolling = false;
+      let totalScroll = 0;
+      const scrollSpeed = 1.2; // pixels per frame (adjust for speed)
 
-    function calculateTotalHeight() {
-      totalHeight = document.documentElement.scrollHeight;
-    }
+      // handler reference so we can remove it later
+      const preventDefaultHandler = (e) => { e.preventDefault(); };
 
-    function autoScroll() {
-      if (!isScrolling) return;
-
-      const currentScroll = document.documentElement.scrollTop || document.body.scrollTop;
-
-      if (currentScroll + window.innerHeight >= totalHeight) {
-        isScrolling = false;
-        document.body.style.overflowY = 'auto'; // allow manual scroll after finish
-        return;
+      function calculateTotalScroll() {
+        // distance from top to where the bottom of the invitation content sits
+        const containerTop = invitationContainer.offsetTop;
+        const contentHeight = invitationContainer.scrollHeight;
+        totalScroll = Math.max(0, containerTop + contentHeight - window.innerHeight);
       }
 
-      document.documentElement.scrollTop += scrollSpeed;
-      document.body.scrollTop += scrollSpeed; // fallback for some browsers
+      function blockUserInteraction() {
+        // prevent manual gestures (touch & wheel) but allow JS-driven scrolling
+        window.addEventListener('touchmove', preventDefaultHandler, { passive: false });
+        window.addEventListener('wheel', preventDefaultHandler, { passive: false });
+        window.addEventListener('touchstart', preventDefaultHandler, { passive: false });
+        // optional: add a class if you want visual feedback
+        document.body.classList.add('blocked-pointer');
+      }
 
-      requestAnimationFrame(autoScroll);
-    }
+      function unblockUserInteraction() {
+        window.removeEventListener('touchmove', preventDefaultHandler);
+        window.removeEventListener('wheel', preventDefaultHandler);
+        window.removeEventListener('touchstart', preventDefaultHandler);
+        document.body.classList.remove('blocked-pointer');
+      }
 
-    startButton.addEventListener('click', () => {
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
+      function autoScrollStep() {
+        if (!isScrolling) return;
+        const currentY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
 
-      calculateTotalHeight();
+        if (currentY >= totalScroll - 0.5) {
+          // reached bottom — finish
+          isScrolling = false;
+          unblockUserInteraction();
+          // allow normal scrolling (no overflow manipulation needed)
+          return;
+        }
 
-      startOverlay.classList.add('opacity-0');
+        const next = Math.min(totalScroll, currentY + scrollSpeed);
+        window.scrollTo({ top: next, left: 0, behavior: 'auto' });
+        requestAnimationFrame(autoScrollStep);
+      }
 
-      setTimeout(() => {
-        startOverlay.style.display = 'none';
-        invitationContainer.classList.remove('opacity-0');
-        invitationContainer.classList.add('opacity-100');
+      startButton.addEventListener('click', () => {
+        // reveal content
+        startOverlay.classList.add('opacity-0');
 
-        bgMusic.play().catch(e => console.error("Autoplay failed:", e));
+        setTimeout(() => {
+          startOverlay.style.display = 'none';
+          invitationContainer.classList.remove('opacity-0');
+          invitationContainer.classList.add('opacity-100');
 
-        document.body.style.overflowY = 'hidden'; // disable manual scroll
+          // user gesture -> play music should be allowed
+          bgMusic.play().catch(e => console.warn('Autoplay prevented:', e));
 
-        isScrolling = true;
-        autoScroll();
+          // compute scroll target BEFORE blocking interactions
+          calculateTotalScroll();
 
-        // Fallback for mobile browsers that pause rAF
-        const fallbackScroll = setInterval(() => {
-          if (!isScrolling) {
-            clearInterval(fallbackScroll);
-            return;
-          }
-          document.documentElement.scrollTop += scrollSpeed;
-          document.body.scrollTop += scrollSpeed;
-        }, 16); // ~60fps
-      }, 1000);
+          // block user touch/wheel so auto-scroll is uninterrupted
+          blockUserInteraction();
+
+          isScrolling = true;
+          requestAnimationFrame(autoScrollStep);
+
+          // fallback interval (some mobile envs throttle rAF). low frequency to save CPU.
+          const fallback = setInterval(() => {
+            if (!isScrolling) { clearInterval(fallback); return; }
+            const cur = window.scrollY || document.documentElement.scrollTop || 0;
+            if (cur < totalScroll) {
+              window.scrollTo(0, Math.min(totalScroll, cur + scrollSpeed));
+            }
+          }, 50);
+        }, 800);
+      });
+
+      // if device rotates or window resizes, recalc target
+      window.addEventListener('resize', calculateTotalScroll);
     });
-  });
-</script>
+  </script>
 
 </body>
 </html>
