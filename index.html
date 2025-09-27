@@ -121,59 +121,42 @@
   </div>
 
 <script>
-window.addEventListener('load', () => {
-  const startButton = document.getElementById('startButton');
-  const startOverlay = document.getElementById('start-overlay');
-  const invitationContainer = document.getElementById('invitation-container');
-  const bgMusic = document.getElementById('bg-music');
+window.addEventListener("load", () => {
+  const startButton = document.getElementById("startButton");
+  const startOverlay = document.getElementById("start-overlay");
+  const invitationContainer = document.getElementById("invitation-container");
+  const bgMusic = document.getElementById("bg-music");
 
-  let isScrolling = false;
-  let targetScroll = 0;
-  const scrollSpeed = 1.2; // pixels per frame
+  let scrolling;
 
-  function calculateTarget() {
-    targetScroll = document.documentElement.scrollHeight - window.innerHeight;
-  }
-
-  function autoScroll() {
-    if (!isScrolling) return;
-
-    const current = window.scrollY || document.documentElement.scrollTop;
-    if (current >= targetScroll) {
-      isScrolling = false; // stop
-      return;
-    }
-
-    window.scrollTo(0, current + scrollSpeed);
-    requestAnimationFrame(autoScroll);
-  }
-
-  startButton.addEventListener('click', () => {
-    // reset scroll
+  startButton.addEventListener("click", () => {
+    // Reset scroll
     window.scrollTo(0, 0);
 
-    // fade out overlay
-    startOverlay.classList.add('opacity-0');
-
+    // Fade out overlay
+    startOverlay.classList.add("opacity-0");
     setTimeout(() => {
-      startOverlay.style.display = 'none';
-      invitationContainer.classList.remove('opacity-0');
-      invitationContainer.classList.add('opacity-100');
+      startOverlay.style.display = "none";
+      invitationContainer.classList.remove("opacity-0");
+      invitationContainer.classList.add("opacity-100");
 
-      // music (works on iOS only after user tap)
-      bgMusic.play().catch(e => console.warn("Autoplay blocked:", e));
+      // Try to play music (needs user tap on iOS)
+      bgMusic.play().catch(() => {});
 
-      // calculate height and start auto-scroll
-      calculateTarget();
-      isScrolling = true;
-      autoScroll();
+      // Start smooth scrolling
+      if (scrolling) clearInterval(scrolling);
+      scrolling = setInterval(() => {
+        if (window.scrollY + window.innerHeight >= document.body.scrollHeight) {
+          clearInterval(scrolling); // stop at bottom
+        } else {
+          window.scrollTo(0, window.scrollY + 1); // 1px per step
+        }
+      }, 20); // ~50 fps
     }, 800);
   });
-
-  // update if orientation changes
-  window.addEventListener('resize', calculateTarget);
 });
 </script>
+
 
 
 </body>
