@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -177,52 +176,70 @@
   </div>
 
   <script>
-    window.addEventListener('load', () => {
-      const startButton = document.getElementById('startButton');
-      const startOverlay = document.getElementById('start-overlay');
-      const invitationContainer = document.getElementById('invitation-container');
-      const bgMusic = document.getElementById('bg-music');
-      let isScrolling = false;
-      let totalHeight;
+  window.addEventListener('load', () => {
+    const startButton = document.getElementById('startButton');
+    const startOverlay = document.getElementById('start-overlay');
+    const invitationContainer = document.getElementById('invitation-container');
+    const bgMusic = document.getElementById('bg-music');
+    let isScrolling = false;
+    let totalHeight;
 
-      const scrollSpeed = 0.5;
+    const scrollSpeed = 0.5; // pixels per frame
 
-      function calculateTotalHeight() {
-        totalHeight = invitationContainer.scrollHeight;
+    function calculateTotalHeight() {
+      totalHeight = document.documentElement.scrollHeight;
+    }
+
+    function autoScroll() {
+      if (!isScrolling) return;
+
+      const currentScroll = document.documentElement.scrollTop || document.body.scrollTop;
+
+      if (currentScroll + window.innerHeight >= totalHeight) {
+        isScrolling = false;
+        document.body.style.overflowY = 'auto'; // allow manual scroll after finish
+        return;
       }
 
-      function autoScroll() {
-        if (!isScrolling) return;
-        const currentScroll = window.scrollY;
-        if (currentScroll + window.innerHeight >= totalHeight) {
-          isScrolling = false;
-          document.body.style.overflowY = 'auto'; // allow manual scroll
-          return;
-        }
-        window.scrollBy(0, scrollSpeed);
-        requestAnimationFrame(autoScroll);
-      }
+      document.documentElement.scrollTop += scrollSpeed;
+      document.body.scrollTop += scrollSpeed; // fallback for some browsers
 
-      startButton.addEventListener('click', () => {
-        window.scrollTo(0, 0);
-        calculateTotalHeight();
+      requestAnimationFrame(autoScroll);
+    }
 
-        startOverlay.classList.add('opacity-0');
+    startButton.addEventListener('click', () => {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
 
-        setTimeout(() => {
-          startOverlay.style.display = 'none';
-          invitationContainer.classList.remove('opacity-0');
-          invitationContainer.classList.add('opacity-100');
+      calculateTotalHeight();
 
-          bgMusic.play().catch(e => console.error("Autoplay failed:", e));
+      startOverlay.classList.add('opacity-0');
 
-          document.body.style.overflowY = 'hidden'; // disable manual scroll during auto-scroll
+      setTimeout(() => {
+        startOverlay.style.display = 'none';
+        invitationContainer.classList.remove('opacity-0');
+        invitationContainer.classList.add('opacity-100');
 
-          isScrolling = true;
-          autoScroll();
-        }, 1000);
-      });
+        bgMusic.play().catch(e => console.error("Autoplay failed:", e));
+
+        document.body.style.overflowY = 'hidden'; // disable manual scroll
+
+        isScrolling = true;
+        autoScroll();
+
+        // Fallback for mobile browsers that pause rAF
+        const fallbackScroll = setInterval(() => {
+          if (!isScrolling) {
+            clearInterval(fallbackScroll);
+            return;
+          }
+          document.documentElement.scrollTop += scrollSpeed;
+          document.body.scrollTop += scrollSpeed;
+        }, 16); // ~60fps
+      }, 1000);
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
