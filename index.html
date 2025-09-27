@@ -120,96 +120,61 @@
     <div class="h-96 w-full"></div>
   </div>
 
-  <script>
-    window.addEventListener('load', () => {
-      const startButton = document.getElementById('startButton');
-      const startOverlay = document.getElementById('start-overlay');
-      const invitationContainer = document.getElementById('invitation-container');
-      const bgMusic = document.getElementById('bg-music');
+<script>
+window.addEventListener('load', () => {
+  const startButton = document.getElementById('startButton');
+  const startOverlay = document.getElementById('start-overlay');
+  const invitationContainer = document.getElementById('invitation-container');
+  const bgMusic = document.getElementById('bg-music');
 
-      let isScrolling = false;
-      let totalScroll = 0;
-      const scrollSpeed = 1.2; // pixels per frame (adjust for speed)
+  let isScrolling = false;
+  let targetScroll = 0;
+  const scrollSpeed = 1.2; // pixels per frame
 
-      // handler reference so we can remove it later
-      const preventDefaultHandler = (e) => { e.preventDefault(); };
+  function calculateTarget() {
+    targetScroll = document.documentElement.scrollHeight - window.innerHeight;
+  }
 
-      function calculateTotalScroll() {
-        // distance from top to where the bottom of the invitation content sits
-        const containerTop = invitationContainer.offsetTop;
-        const contentHeight = invitationContainer.scrollHeight;
-        totalScroll = Math.max(0, containerTop + contentHeight - window.innerHeight);
-      }
+  function autoScroll() {
+    if (!isScrolling) return;
 
-      function blockUserInteraction() {
-        // prevent manual gestures (touch & wheel) but allow JS-driven scrolling
-        window.addEventListener('touchmove', preventDefaultHandler, { passive: false });
-        window.addEventListener('wheel', preventDefaultHandler, { passive: false });
-        window.addEventListener('touchstart', preventDefaultHandler, { passive: false });
-        // optional: add a class if you want visual feedback
-        document.body.classList.add('blocked-pointer');
-      }
+    const current = window.scrollY || document.documentElement.scrollTop;
+    if (current >= targetScroll) {
+      isScrolling = false; // stop
+      return;
+    }
 
-      function unblockUserInteraction() {
-        window.removeEventListener('touchmove', preventDefaultHandler);
-        window.removeEventListener('wheel', preventDefaultHandler);
-        window.removeEventListener('touchstart', preventDefaultHandler);
-        document.body.classList.remove('blocked-pointer');
-      }
+    window.scrollTo(0, current + scrollSpeed);
+    requestAnimationFrame(autoScroll);
+  }
 
-      function autoScrollStep() {
-        if (!isScrolling) return;
-        const currentY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  startButton.addEventListener('click', () => {
+    // reset scroll
+    window.scrollTo(0, 0);
 
-        if (currentY >= totalScroll - 0.5) {
-          // reached bottom — finish
-          isScrolling = false;
-          unblockUserInteraction();
-          // allow normal scrolling (no overflow manipulation needed)
-          return;
-        }
+    // fade out overlay
+    startOverlay.classList.add('opacity-0');
 
-        const next = Math.min(totalScroll, currentY + scrollSpeed);
-        window.scrollTo({ top: next, left: 0, behavior: 'auto' });
-        requestAnimationFrame(autoScrollStep);
-      }
+    setTimeout(() => {
+      startOverlay.style.display = 'none';
+      invitationContainer.classList.remove('opacity-0');
+      invitationContainer.classList.add('opacity-100');
 
-      startButton.addEventListener('click', () => {
-        // reveal content
-        startOverlay.classList.add('opacity-0');
+      // music (works on iOS only after user tap)
+      bgMusic.play().catch(e => console.warn("Autoplay blocked:", e));
 
-        setTimeout(() => {
-          startOverlay.style.display = 'none';
-          invitationContainer.classList.remove('opacity-0');
-          invitationContainer.classList.add('opacity-100');
+      // calculate height and start auto-scroll
+      calculateTarget();
+      isScrolling = true;
+      autoScroll();
+    }, 800);
+  });
 
-          // user gesture -> play music should be allowed
-          bgMusic.play().catch(e => console.warn('Autoplay prevented:', e));
+  // update if orientation changes
+  window.addEventListener('resize', calculateTarget);
+});
+</script>
 
-          // compute scroll target BEFORE blocking interactions
-          calculateTotalScroll();
-
-          // block user touch/wheel so auto-scroll is uninterrupted
-          blockUserInteraction();
-
-          isScrolling = true;
-          requestAnimationFrame(autoScrollStep);
-
-          // fallback interval (some mobile envs throttle rAF). low frequency to save CPU.
-          const fallback = setInterval(() => {
-            if (!isScrolling) { clearInterval(fallback); return; }
-            const cur = window.scrollY || document.documentElement.scrollTop || 0;
-            if (cur < totalScroll) {
-              window.scrollTo(0, Math.min(totalScroll, cur + scrollSpeed));
-            }
-          }, 50);
-        }, 800);
-      });
-
-      // if device rotates or window resizes, recalc target
-      window.addEventListener('resize', calculateTotalScroll);
-    });
-  </script>
 
 </body>
 </html>
