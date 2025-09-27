@@ -122,40 +122,43 @@
 
 <script>
 window.addEventListener("load", () => {
-  const startButton = document.getElementById("startButton");
-  const startOverlay = document.getElementById("start-overlay");
-  const invitationContainer = document.getElementById("invitation-container");
-  const bgMusic = document.getElementById("bg-music");
+  const btn = document.getElementById("startButton");
+  const overlay = document.getElementById("start-overlay");
+  const container = document.getElementById("invitation-container");
+  const music = document.getElementById("bg-music");
 
-  let scrolling;
+  btn.addEventListener("click", () => {
+    // Reset to top
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 
-  startButton.addEventListener("click", () => {
-    // Reset scroll
-    window.scrollTo(0, 0);
+    // Hide overlay
+    overlay.style.display = "none";
+    container.style.opacity = "1";
 
-    // Fade out overlay
-    startOverlay.classList.add("opacity-0");
-    setTimeout(() => {
-      startOverlay.style.display = "none";
-      invitationContainer.classList.remove("opacity-0");
-      invitationContainer.classList.add("opacity-100");
+    // Play music (only works after tap)
+    music.play().catch(() => {});
 
-      // Try to play music (needs user tap on iOS)
-      bgMusic.play().catch(() => {});
+    // Auto-scroll
+    const speed = 1; // px per step
+    const timer = setInterval(() => {
+      let doc = document.documentElement;
+      let body = document.body;
 
-      // Start smooth scrolling
-      if (scrolling) clearInterval(scrolling);
-      scrolling = setInterval(() => {
-        if (window.scrollY + window.innerHeight >= document.body.scrollHeight) {
-          clearInterval(scrolling); // stop at bottom
-        } else {
-          window.scrollTo(0, window.scrollY + 1); // 1px per step
-        }
-      }, 20); // ~50 fps
-    }, 800);
+      let current = doc.scrollTop || body.scrollTop;
+      let max = (doc.scrollHeight || body.scrollHeight) - window.innerHeight;
+
+      if (current >= max) {
+        clearInterval(timer); // stop at bottom
+      } else {
+        doc.scrollTop = current + speed;
+        body.scrollTop = current + speed; // iOS fallback
+      }
+    }, 15); // ~66fps
   });
 });
 </script>
+
 
 
 
