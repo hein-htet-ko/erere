@@ -71,13 +71,7 @@
       text-shadow: 0 0 10px rgba(255,105,180,0.7);
     }
 
-    /* responsive images + same fade-in transition */
     img {
-      max-width: 100%;
-      height: auto;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
       opacity: 0;
       transform: translateY(30px);
       transition: opacity 1.5s ease, transform 1.5s ease;
@@ -169,134 +163,95 @@
   </div>
 
 <script>
-window.addEventListener('load', () => {
-  const startButton = document.getElementById('startButton');
-  const startOverlay = document.getElementById('start-overlay');
-  const invitationContainer = document.getElementById('invitation-container');
-  const bgMusic = document.getElementById('bg-music');
-  const quotes = document.querySelectorAll('.quote');
-  const images = document.querySelectorAll('#invitation-container img');
-  const closingText = document.getElementById('closing-text');
+  window.addEventListener('load', () => {
+    const startButton = document.getElementById('startButton');
+    const startOverlay = document.getElementById('start-overlay');
+    const invitationContainer = document.getElementById('invitation-container');
+    const bgMusic = document.getElementById('bg-music');
+    const quotes = document.querySelectorAll('.quote');
+    const images = document.querySelectorAll('img');
+    const closingText = document.getElementById('closing-text');
+    let isScrolling = false;
+    let scrollSpeed = 0.8; // smoother on mobile
 
-  let isScrolling = false;
-  let heartInterval = null;
-  let petalInterval = null;
-
-  function createHeart() {
-    const heart = document.createElement('div');
-    heart.classList.add('floating-heart');
-    heart.innerHTML = Math.random() > 0.5 ? '💖' : '❤️';
-    heart.style.left = Math.random() * 100 + 'vw';
-    heart.style.fontSize = (20 + Math.random() * 20) + 'px';
-    document.getElementById('hearts-container').appendChild(heart);
-    setTimeout(() => heart.remove(), 6000);
-  }
-
-  function createPetal() {
-    const petal = document.createElement('div');
-    petal.classList.add('petal');
-    petal.innerHTML = '🌸';
-    petal.style.left = Math.random() * 100 + 'vw';
-    petal.style.fontSize = (18 + Math.random() * 12) + 'px';
-    petal.style.animationDuration = (6 + Math.random() * 4) + 's';
-    document.getElementById('petals-container').appendChild(petal);
-    setTimeout(() => petal.remove(), 10000);
-  }
-
-  // Wait for images (or timeout)
-  function waitForImages(timeout = 1500) {
-    const imgs = Array.from(invitationContainer.querySelectorAll('img'));
-    if (!imgs.length) return Promise.resolve();
-    return new Promise(resolve => {
-      let loaded = 0;
-      function markOne() {
-        loaded++;
-        if (loaded >= imgs.length) resolve();
-      }
-      imgs.forEach(img => {
-        if (img.complete && img.naturalWidth !== 0) {
-          markOne();
-        } else {
-          img.addEventListener('load', markOne, { once: true });
-          img.addEventListener('error', markOne, { once: true });
-        }
-      });
-      setTimeout(resolve, timeout);
-    });
-  }
-
-  function revealInView() {
-    [...quotes, ...images].forEach(el => {
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.85) {
-        el.classList.add('visible');
-      }
-    });
-  }
-
-  function stopAutoScroll() {
-    isScrolling = false;
-    const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    window.scrollTo({ top: maxScroll, behavior: 'smooth' });
-    closingText.classList.add('opacity-100');
-  }
-
-  function startAutoScroll() {
-    if (isScrolling) return;
-    isScrolling = true;
-
-    const userStopHandler = () => { stopAutoScroll(); };
-    window.addEventListener('touchstart', userStopHandler, { once: true, passive: true });
-    window.addEventListener('wheel', userStopHandler, { once: true, passive: true });
-
-    function step() {
-      if (!isScrolling) return;
-      revealInView();
-
-      const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-      const stepPx = Math.min(Math.max(window.innerHeight / 200, 0.6), 20);
-
-      if (window.scrollY < maxScroll - 1) {
-        window.scrollBy(0, stepPx);
-        requestAnimationFrame(step);
-      } else {
-        stopAutoScroll();
-      }
+    // Floating hearts generator
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.classList.add('floating-heart');
+      heart.innerHTML = Math.random() > 0.5 ? '💖' : '❤️';
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.fontSize = (20 + Math.random() * 20) + 'px';
+      document.getElementById('hearts-container').appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
     }
 
-    requestAnimationFrame(step);
-  }
+    // Falling petals generator
+    function createPetal() {
+      const petal = document.createElement('div');
+      petal.classList.add('petal');
+      petal.innerHTML = '🌸';
+      petal.style.left = Math.random() * 100 + 'vw';
+      petal.style.fontSize = (18 + Math.random() * 12) + 'px';
+      petal.style.animationDuration = (6 + Math.random() * 4) + 's';
+      document.getElementById('petals-container').appendChild(petal);
+      setTimeout(() => petal.remove(), 10000);
+    }
 
-  startButton.addEventListener('click', () => {
-    startButton.disabled = true;
-    startOverlay.classList.add('opacity-0');
-    setTimeout(() => {
-      startOverlay.style.display = 'none';
-      document.body.style.overflowY = 'auto';
-      invitationContainer.classList.remove('opacity-0');
-      invitationContainer.classList.add('opacity-100');
-
-      // Music fade-in
-      bgMusic.volume = 0;
-      bgMusic.play().catch(()=>{});
-      let vol = 0;
-      let fadeIn = setInterval(() => {
-        if (vol < 1) {
-          vol += 0.02;
-          bgMusic.volume = Math.min(1, vol);
-        } else clearInterval(fadeIn);
-      }, 200);
-
-      if (!heartInterval) heartInterval = setInterval(createHeart, 1200);
-      if (!petalInterval) petalInterval = setInterval(createPetal, 1500);
-
-      waitForImages(1500).then(() => {
-        revealInView();
-        startAutoScroll();
+    // Auto Scroll
+    function autoScroll() {
+      if (!isScrolling) return;
+      const currentScroll = window.scrollY;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      
+      // reveal quotes and images
+      [...quotes, ...images].forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.85) {
+          el.classList.add('visible');
+        }
       });
-    }, 1000);
-  }, { once: true });
-});
+
+      if (currentScroll >= maxScroll) {
+        isScrolling = false;
+        closingText.classList.add('opacity-100');
+        return;
+      }
+      window.scrollTo(0, currentScroll + scrollSpeed);
+      requestAnimationFrame(autoScroll);
+    }
+
+    // Start button click
+    startButton.addEventListener('click', () => {
+      window.scrollTo(0, 0);
+      startOverlay.classList.add('opacity-0');
+      setTimeout(() => {
+        startOverlay.style.display = 'none';
+        document.body.style.overflowY = 'auto';
+        invitationContainer.classList.remove('opacity-0');
+        invitationContainer.classList.add('opacity-100');
+
+        // Music fade-in
+        bgMusic.volume = 0;
+        bgMusic.play().catch(()=>{});
+        let vol = 0;
+        let fadeIn = setInterval(() => {
+          if (vol < 1) {
+            vol += 0.02;
+            bgMusic.volume = vol;
+          } else clearInterval(fadeIn);
+        }, 200);
+
+        // Start floating hearts & petals
+        setInterval(createHeart, 1200);
+        setInterval(createPetal, 1500);
+
+        // Start auto scroll (no stop on mobile)
+        isScrolling = true;
+        autoScroll();
+
+      }, 1000);
+    });
+  });
 </script>
 </body>
 </html>
