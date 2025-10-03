@@ -10,6 +10,7 @@
     
     body {
       font-family: 'Cormorant Garamond', serif;
+      /* keep page locked before user taps start, but we'll restore scrolling after */
       overflow-y: hidden;
       overscroll-behavior: none;
     }
@@ -108,7 +109,7 @@
 
     <p class="text-lg md:text-xl font-normal tracking-wide">We can't wait to share this beautiful moment with you.</p>
     <p class="text-lg md:text-xl font-normal tracking-wide mt-4">Formal invitation to follow.</p>
-    <div class="h-96 w-full"></div> 
+    <div class="h-96 w-full"></div>
   </div>
 
  <script>
@@ -117,54 +118,26 @@
     const startOverlay = document.getElementById('start-overlay');
     const invitationContainer = document.getElementById('invitation-container');
     const bgMusic = document.getElementById('bg-music');
-    let isScrolling = false;
-    let totalHeight;
 
-    const scrollStep = 1.2; // mobile smoothness
-
-    // ✅ use full document height
-    function calculateTotalHeight() {
-      totalHeight = document.documentElement.scrollHeight;
-    }
-
-    function autoScroll() {
-      if (!isScrolling) return;
-
-      // ✅ consistent scroll position
-      const currentScroll = document.documentElement.scrollTop || window.scrollY;
-
-      if (currentScroll + window.innerHeight >= totalHeight) {
-        isScrolling = false;
-        document.removeEventListener("touchmove", preventScroll, { passive: false });
-        return;
-      }
-
-      window.scrollTo(0, currentScroll + scrollStep);
-      requestAnimationFrame(autoScroll);
-    }
-
-    function preventScroll(e) {
-      e.preventDefault();
-    }
-
+    // Removed auto-scrolling & touch-blocking so mobile/manual scrolling works as expected.
     startButton.addEventListener('click', () => {
+      // ensure top position
       window.scrollTo(0, 0);
-      calculateTotalHeight();
 
+      // fade out overlay
       startOverlay.classList.add('opacity-0');
 
       setTimeout(() => {
+        // hide overlay and restore page scrolling
         startOverlay.style.display = 'none';
+        document.body.style.overflowY = 'auto';
+
+        // reveal the invitation content
         invitationContainer.classList.remove('opacity-0');
         invitationContainer.classList.add('opacity-100');
 
-        bgMusic.play().catch(e => console.error("Autoplay failed:", e));
-
-        // block manual scrolling while auto-scrolling
-        document.addEventListener("touchmove", preventScroll, { passive: false });
-
-        isScrolling = true;
-        autoScroll();
+        // try to play background music (will require user gesture on some mobile browsers)
+        bgMusic.play().catch(e => console.error('Autoplay failed:', e));
       }, 1000);
     });
   });
