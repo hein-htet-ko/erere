@@ -111,7 +111,7 @@
     <div class="h-96 w-full"></div> 
   </div>
 
-  <script>
+ <script>
   window.addEventListener('load', () => {
     const startButton = document.getElementById('startButton');
     const startOverlay = document.getElementById('start-overlay');
@@ -120,20 +120,25 @@
     let isScrolling = false;
     let totalHeight;
 
-    const scrollStep = 1.2; // a bit faster for mobile smoothness
+    const scrollStep = 1.2; // mobile smoothness
 
+    // ✅ use full document height
     function calculateTotalHeight() {
-      totalHeight = invitationContainer.scrollHeight;
+      totalHeight = document.documentElement.scrollHeight;
     }
 
     function autoScroll() {
       if (!isScrolling) return;
-      const currentScroll = window.scrollY;
+
+      // ✅ consistent scroll position
+      const currentScroll = document.documentElement.scrollTop || window.scrollY;
+
       if (currentScroll + window.innerHeight >= totalHeight) {
         isScrolling = false;
         document.removeEventListener("touchmove", preventScroll, { passive: false });
         return;
       }
+
       window.scrollTo(0, currentScroll + scrollStep);
       requestAnimationFrame(autoScroll);
     }
@@ -155,7 +160,7 @@
 
         bgMusic.play().catch(e => console.error("Autoplay failed:", e));
 
-        // block touch scroll during auto-scroll
+        // block manual scrolling while auto-scrolling
         document.addEventListener("touchmove", preventScroll, { passive: false });
 
         isScrolling = true;
@@ -164,6 +169,7 @@
     });
   });
 </script>
+
 
 </body>
 </html>
