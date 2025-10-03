@@ -10,8 +10,7 @@
     
     body {
       font-family: 'Cormorant Garamond', serif;
-      /* keep page locked before user taps start, but we'll restore scrolling after */
-      overflow-y: hidden;
+      overflow-y: hidden; /* locked until start */
       overscroll-behavior: none;
     }
     html { scroll-behavior: smooth; }
@@ -120,7 +119,7 @@
     const bgMusic = document.getElementById('bg-music');
 
     let isScrolling = false;
-    let scrollSpeed = 0.6; // ✅ smoother for mobile
+    let scrollSpeed = 0.8; // smoother for mobile
 
     function autoScroll() {
       if (!isScrolling) return;
@@ -144,23 +143,25 @@
 
       setTimeout(() => {
         startOverlay.style.display = 'none';
+        document.body.style.overflowY = 'auto'; // restore scrolling
+
         invitationContainer.classList.remove('opacity-0');
         invitationContainer.classList.add('opacity-100');
 
-        // ✅ allow page scrolling
-        document.body.style.overflowY = 'auto';
+        bgMusic.play().catch(e => console.error('Autoplay failed:', e));
 
-        // ✅ play music
-        bgMusic.play().catch(e => console.error("Autoplay failed:", e));
-
-        // ✅ start autoscroll
+        // start auto scroll
         isScrolling = true;
         autoScroll();
+
+        // stop auto scroll if user touches screen
+        window.addEventListener('touchstart', () => {
+          isScrolling = false;
+        }, { once: true });
       }, 1000);
     });
   });
 </script>
-
 
 
 </body>
