@@ -10,9 +10,11 @@
     
     body {
       font-family: 'Cormorant Garamond', serif;
-      overflow-y: hidden; /* locked until start */
       background: linear-gradient(to bottom, #fff0f5, #ffe4e1, #fff0f5);
     }
+
+    .lock-scroll { overflow-y: hidden !important; }
+
     html { scroll-behavior: smooth; }
 
     /* Floating hearts */
@@ -80,9 +82,14 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* Make sure there's enough height for scrolling */
+    #invitation-container {
+      min-height: 200vh;
+    }
   </style>
 </head>
-<body class="bg-stone-50 text-stone-700 leading-relaxed antialiased">
+<body class="bg-stone-50 text-stone-700 leading-relaxed antialiased lock-scroll">
 
   <!-- Romantic Overlay -->
   <div id="start-overlay" class="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-1000 ease-in-out opacity-100">
@@ -107,55 +114,46 @@
 
   <!-- Invitation Content -->
   <div id="invitation-container" class="relative w-full flex flex-col items-center justify-start text-center py-20 px-6 opacity-0 transition-opacity duration-1000 ease-in-out">
-    
-    <!-- Images + Quotes -->
+    <!-- ... (the rest of your HTML for images, quotes, etc. unchanged) ... -->
     <div class="mb-12 sm:mt-40">
       <img src="./photos/7DecN&T.pptx.jpg" width="1700" height="720">
       <p class="quote mt-4">"Two souls, one journey, endless love."</p>
     </div>
-
     <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
       <img src="./photos/7DecN&T.pptx-2.jpg">
       <p class="quote mt-4">"This day marks the start of forever."</p>
     </div>
-
     <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
       <img src="./photos/7DecN&T.pptx-3.jpg">
       <p class="quote mt-4">"Together is our favorite place to be."</p>
     </div>
-
     <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
       <img src="./photos/7DecN&T.pptx-4.jpg">
       <p class="quote mt-4">"Love is not about how many days, but how deeply every moment is shared."</p>
     </div>
-
     <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
       <img src="./photos/7DecN&T.pptx -5.jpg">
       <p class="quote mt-4">"Every picture tells our love story."</p>
     </div>
-
     <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
       <img src="./photos/7DecN&T.pptx-6.jpg">
       <p class="quote mt-4">"A day to remember, a love to cherish forever."</p>
     </div>
-
     <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
       <img src="./photos/7DecN&T.pptx-7.jpg">
       <p class="quote mt-4">"Dreams do come true when we are together."</p>
     </div>
-
     <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
       <img src="./photos/7DecN&T.pptx-8.jpg">
       <p class="quote mt-4">"With you, every chapter is magical."</p>
     </div>
-
     <!-- closing screen -->
     <div class="my-20 text-pink-700 text-4xl font-light opacity-0 transition-opacity duration-2000" id="closing-text">
       💍 We can’t wait to celebrate with you 💍
@@ -203,9 +201,10 @@
       setTimeout(() => petal.remove(), 10000);
     }
 
-    // Auto Scroll
+    // Auto Scroll (with better iOS/Android support)
     function doAutoScroll() {
       if (!isScrolling) return;
+      // Always scroll the window
       const currentScroll = window.scrollY;
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
 
@@ -234,13 +233,20 @@
 
     // On start
     startButton.addEventListener('click', () => {
-      window.scrollTo(0, 0);
+      // Remove overlay & enable scroll
       startOverlay.classList.add('opacity-0');
+      document.body.classList.remove('lock-scroll');
       setTimeout(() => {
         startOverlay.style.display = 'none';
-        document.body.style.overflowY = 'auto';
         invitationContainer.classList.remove('opacity-0');
         invitationContainer.classList.add('opacity-100');
+
+        // Wait a bit before starting scroll (for mobile compatibility)
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          isScrolling = true;
+          doAutoScroll();
+        }, 200);
 
         // Music fade-in
         bgMusic.volume = 0;
@@ -257,10 +263,6 @@
         setInterval(createHeart, 1200);
         setInterval(createPetal, 1500);
 
-        // Start auto scroll after gesture
-        isScrolling = true;
-        doAutoScroll();
-
         // Extra: On iOS, if user touches the screen, keep autoscrolling active
         if (isMobile()) {
           window.addEventListener('touchstart', () => {
@@ -270,7 +272,6 @@
             }
           });
         }
-
       }, 1000);
     });
 
