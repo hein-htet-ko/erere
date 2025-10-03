@@ -160,8 +160,8 @@
   </div>
 
   <!-- Background Music -->
-  <audio id="bg-music" loop>
-    <source src="./Ed-Sheeran-Perfect.mp3" type="audio/mpeg">
+  <audio id="bg-music">
+    <source src="./Ed Sheeran - Perfect.mp3" type="audio/mpeg">
     Your browser does not support the audio tag.
   </audio>
 
@@ -278,9 +278,12 @@
         invitationContainer.classList.remove('opacity-0');
         invitationContainer.classList.add('opacity-100');
 
-        // Music fade-in
+        // Music fade-in (unmute after click)
+        bgMusic.muted = false;
         bgMusic.volume = 0;
-        bgMusic.play().catch(()=>{});
+        bgMusic.currentTime = 0;
+        bgMusic.play().catch(err => console.log("Playback error:", err));
+
         let vol = 0;
         let fadeIn = setInterval(() => {
           if (vol < 1) {
