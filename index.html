@@ -11,44 +11,74 @@
     body {
       font-family: 'Cormorant Garamond', serif;
       overflow-y: hidden; /* locked until start */
-      overscroll-behavior: none;
+      background: linear-gradient(to bottom, #fff0f5, #ffe4e1, #fff0f5);
     }
     html { scroll-behavior: smooth; }
 
-    /* Hearts and Love Symbols */
-    .heart, .love {
-      position: absolute;
-      border-radius: 50%;
-      opacity: 0.8;
-      transform: scale(0.8);
-      animation-timing-function: ease-out;
-    }
-
-    .heart {
-      background: #ffb6c1;
-      width: 20px; height: 20px;
-      animation: popHeart 3s infinite ease-in-out;
-    }
-
-    .love {
-      width: 25px; height: 25px;
-      font-size: 30px;
+    /* Floating hearts */
+    .floating-heart {
+      position: fixed;
+      bottom: -50px;
       color: #ff69b4;
-      animation: popHeart 4s infinite ease-in-out;
+      font-size: 20px;
+      animation: floatUp 6s linear infinite;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 0.9; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-120vh) scale(1.3); opacity: 0; }
     }
 
-    @keyframes popHeart {
-      0% { transform: scale(1) translateY(0); opacity: 1; }
-      30% { transform: scale(1.3) translateY(-50px); opacity: 1.2; }
-      50% { transform: scale(0.9) translateY(0); opacity: 1; }
-      70% { transform: scale(1.2) translateY(-30px); opacity: 1; }
-      100% { transform: scale(1) translateY(0); opacity: 0; }
+    /* Falling petals */
+    .petal {
+      position: fixed;
+      top: -40px;
+      color: #ffb6c1;
+      font-size: 22px;
+      animation: fall 8s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes fall {
+      0% { transform: translateX(0) rotate(0deg); opacity: 1; }
+      50% { transform: translateX(50px) rotate(180deg); opacity: 0.9; }
+      100% { transform: translateY(110vh) translateX(-50px) rotate(360deg); opacity: 0; }
     }
 
-    /* Overlay Background */
+    /* Quotes fade */
+    .quote {
+      font-size: 1.5rem;
+      font-weight: 300;
+      color: #c71585;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 2s ease, transform 2s ease;
+    }
+    .quote.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Overlay */
     #start-overlay {
       background: linear-gradient(135deg, #ffe6f0 0%, #fff0f5 100%);
       overflow: hidden;
+    }
+
+    /* Closing text */
+    #closing-text {
+      text-shadow: 0 0 10px rgba(255,105,180,0.7);
+    }
+
+    img {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 1.5s ease, transform 1.5s ease;
+    }
+    img.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
   </style>
 </head>
@@ -56,20 +86,11 @@
 
   <!-- Romantic Overlay -->
   <div id="start-overlay" class="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-1000 ease-in-out opacity-100">
-    <!-- Floating hearts & love symbols -->
-    <div class="absolute inset-0 pointer-events-none">
-      <div class="heart" style="left: 10%; animation-delay: 0s;"></div>
-      <div class="heart" style="left: 40%; animation-delay: 1s;"></div>
-      <div class="heart" style="left: 70%; animation-delay: 2s;"></div>
-      <div class="love" style="left: 25%; animation-delay: 1.5s;">❤️</div>
-      <div class="love" style="left: 60%; animation-delay: 0.5s;">💖</div>
-    </div>
-
     <div class="flex flex-col items-center p-6 sm:p-10 rounded-xl bg-white/70 backdrop-blur-sm shadow-xl max-w-sm sm:max-w-md mx-4 text-center">
       <h1 class="text-4xl sm:text-5xl md:text-6xl font-extralight text-pink-700 mb-4">You're Invited</h1>
-      <p class="text-xl sm:text-2xl font-light text-pink-500 mb-6">Please tap to begin</p>
-      <button id="startButton" class="bg-pink-200 text-pink-800 font-medium py-3 px-8 rounded-full shadow-lg hover:bg-pink-300 transition-colors duration-300 transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-pink-300 focus:ring-opacity-50">
-        Tap to Begin
+      <p class="text-xl sm:text-2xl font-light text-pink-500 mb-6">Tap to Begin</p>
+      <button id="startButton" class="bg-pink-200 text-pink-800 font-medium py-3 px-8 rounded-full shadow-lg hover:bg-pink-300 transition-transform duration-300 transform hover:scale-105 active:scale-95">
+        💖 Begin Journey 💖
       </button>
     </div>
   </div>
@@ -80,106 +101,157 @@
     Your browser does not support the audio tag.
   </audio>
 
+  <!-- Floating hearts & petals -->
+  <div id="hearts-container"></div>
+  <div id="petals-container"></div>
+
   <!-- Invitation Content -->
   <div id="invitation-container" class="relative w-full flex flex-col items-center justify-start text-center py-20 px-6 opacity-0 transition-opacity duration-1000 ease-in-out">
+    
+    <!-- Images + Quotes -->
     <div class="mb-12 sm:mt-40">
-      <img src="./photos/7DecN&T.pptx.jpg" width="1700px" height="720px">
+      <img src="./photos/7DecN&T.pptx.jpg" width="1700" height="720">
+      <p class="quote mt-4">"Two souls, one journey, endless love."</p>
     </div>
 
-    <div class="w-full h-px bg-stone-300 my-8 sm:my-12"></div>
-
+    <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
       <img src="./photos/7DecN&T.pptx-2.jpg">
+      <p class="quote mt-4">"This day marks the start of forever."</p>
     </div>
 
-    <div class="w-full h-px bg-stone-300 my-8 sm:my-12"></div>
-
+    <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
-      <img src="./photos/7DecN&T.pptx-3.jpg" alt="">
+      <img src="./photos/7DecN&T.pptx-3.jpg">
+      <p class="quote mt-4">"Together is our favorite place to be."</p>
     </div>
 
-    <div class="w-full h-px bg-stone-300 my-8 sm:my-12"></div>
-
+    <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
-      <img src="./photos/7DecN&T.pptx-4.jpg" alt="">
+      <img src="./photos/7DecN&T.pptx-4.jpg">
+      <p class="quote mt-4">"Love is not about how many days, but how deeply every moment is shared."</p>
     </div>
 
-    <div class="w-full h-px bg-stone-300 my-8 sm:my-12"></div>
-
+    <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
-      <img src="./photos/7DecN&T.pptx -5.jpg" alt="">
+      <img src="./photos/7DecN&T.pptx -5.jpg">
+      <p class="quote mt-4">"Every picture tells our love story."</p>
     </div>
 
-    <div class="w-full h-px bg-stone-300 my-8 sm:my-12"></div>
-
+    <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
-      <img src="./photos/7DecN&T.pptx-6.jpg" alt="">
+      <img src="./photos/7DecN&T.pptx-6.jpg">
+      <p class="quote mt-4">"A day to remember, a love to cherish forever."</p>
     </div>
 
-    <div class="w-full h-px bg-stone-300 my-8 sm:my-12"></div>
-
+    <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
-      <img src="./photos/7DecN&T.pptx-7.jpg" alt="">
+      <img src="./photos/7DecN&T.pptx-7.jpg">
+      <p class="quote mt-4">"Dreams do come true when we are together."</p>
     </div>
 
-    <div class="w-full h-px bg-stone-300 my-8 sm:my-12"></div>
-
+    <div class="w-full h-px bg-stone-300 my-8"></div>
     <div class="mb-12">
-      <img src="./photos/7DecN&T.pptx-8.jpg" alt="">
+      <img src="./photos/7DecN&T.pptx-8.jpg">
+      <p class="quote mt-4">"With you, every chapter is magical."</p>
     </div>
 
- <script>
+    <!-- closing screen -->
+    <div class="my-20 text-pink-700 text-4xl font-light opacity-0 transition-opacity duration-2000" id="closing-text">
+      💍 We can’t wait to celebrate with you 💍
+    </div>
+  </div>
+
+<script>
   window.addEventListener('load', () => {
     const startButton = document.getElementById('startButton');
     const startOverlay = document.getElementById('start-overlay');
     const invitationContainer = document.getElementById('invitation-container');
     const bgMusic = document.getElementById('bg-music');
-
+    const quotes = document.querySelectorAll('.quote');
+    const images = document.querySelectorAll('img');
+    const closingText = document.getElementById('closing-text');
     let isScrolling = false;
-    let scrollSpeed = 0.8; // smoother for mobile
+    let scrollSpeed = 0.8; // smoother on mobile
 
+    // Floating hearts generator
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.classList.add('floating-heart');
+      heart.innerHTML = Math.random() > 0.5 ? '💖' : '❤️';
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.fontSize = (20 + Math.random() * 20) + 'px';
+      document.getElementById('hearts-container').appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
+    }
+
+    // Falling petals generator
+    function createPetal() {
+      const petal = document.createElement('div');
+      petal.classList.add('petal');
+      petal.innerHTML = '🌸';
+      petal.style.left = Math.random() * 100 + 'vw';
+      petal.style.fontSize = (18 + Math.random() * 12) + 'px';
+      petal.style.animationDuration = (6 + Math.random() * 4) + 's';
+      document.getElementById('petals-container').appendChild(petal);
+      setTimeout(() => petal.remove(), 10000);
+    }
+
+    // Auto Scroll
     function autoScroll() {
       if (!isScrolling) return;
-
       const currentScroll = window.scrollY;
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      
+      // reveal quotes and images
+      [...quotes, ...images].forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.85) {
+          el.classList.add('visible');
+        }
+      });
 
       if (currentScroll >= maxScroll) {
         isScrolling = false;
+        closingText.classList.add('opacity-100');
         return;
       }
-
       window.scrollTo(0, currentScroll + scrollSpeed);
       requestAnimationFrame(autoScroll);
     }
 
+    // Start button click
     startButton.addEventListener('click', () => {
       window.scrollTo(0, 0);
-
       startOverlay.classList.add('opacity-0');
-
       setTimeout(() => {
         startOverlay.style.display = 'none';
-        document.body.style.overflowY = 'auto'; // restore scrolling
-
+        document.body.style.overflowY = 'auto';
         invitationContainer.classList.remove('opacity-0');
         invitationContainer.classList.add('opacity-100');
 
-        bgMusic.play().catch(e => console.error('Autoplay failed:', e));
+        // Music fade-in
+        bgMusic.volume = 0;
+        bgMusic.play().catch(()=>{});
+        let vol = 0;
+        let fadeIn = setInterval(() => {
+          if (vol < 1) {
+            vol += 0.02;
+            bgMusic.volume = vol;
+          } else clearInterval(fadeIn);
+        }, 200);
 
-        // start auto scroll
+        // Start floating hearts & petals
+        setInterval(createHeart, 1200);
+        setInterval(createPetal, 1500);
+
+        // Start auto scroll (no stop on mobile)
         isScrolling = true;
         autoScroll();
 
-        // stop auto scroll if user touches screen
-        window.addEventListener('touchstart', () => {
-          isScrolling = false;
-        }, { once: true });
       }, 1000);
     });
   });
 </script>
-
-
 </body>
 </html>
