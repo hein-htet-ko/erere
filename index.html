@@ -119,29 +119,48 @@
     const invitationContainer = document.getElementById('invitation-container');
     const bgMusic = document.getElementById('bg-music');
 
-    // Removed auto-scrolling & touch-blocking so mobile/manual scrolling works as expected.
+    let isScrolling = false;
+    let scrollSpeed = 0.6; // ✅ smoother for mobile
+
+    function autoScroll() {
+      if (!isScrolling) return;
+
+      const currentScroll = window.scrollY;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+      if (currentScroll >= maxScroll) {
+        isScrolling = false;
+        return;
+      }
+
+      window.scrollTo(0, currentScroll + scrollSpeed);
+      requestAnimationFrame(autoScroll);
+    }
+
     startButton.addEventListener('click', () => {
-      // ensure top position
       window.scrollTo(0, 0);
 
-      // fade out overlay
       startOverlay.classList.add('opacity-0');
 
       setTimeout(() => {
-        // hide overlay and restore page scrolling
         startOverlay.style.display = 'none';
-        document.body.style.overflowY = 'auto';
-
-        // reveal the invitation content
         invitationContainer.classList.remove('opacity-0');
         invitationContainer.classList.add('opacity-100');
 
-        // try to play background music (will require user gesture on some mobile browsers)
-        bgMusic.play().catch(e => console.error('Autoplay failed:', e));
+        // ✅ allow page scrolling
+        document.body.style.overflowY = 'auto';
+
+        // ✅ play music
+        bgMusic.play().catch(e => console.error("Autoplay failed:", e));
+
+        // ✅ start autoscroll
+        isScrolling = true;
+        autoScroll();
       }, 1000);
     });
   });
 </script>
+
 
 
 </body>
