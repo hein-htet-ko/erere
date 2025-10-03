@@ -24,6 +24,7 @@
       animation: floatUp 6s linear infinite;
       opacity: 0.8;
       pointer-events: none;
+      z-index: 1;
     }
     @keyframes floatUp {
       0% { transform: translateY(0) scale(1); opacity: 0.9; }
@@ -39,6 +40,7 @@
       font-size: 22px;
       animation: fall 8s linear infinite;
       pointer-events: none;
+      z-index: 1;
     }
     @keyframes fall {
       0% { transform: translateX(0) rotate(0deg); opacity: 1; }
@@ -46,39 +48,101 @@
       100% { transform: translateY(110vh) translateX(-50px) rotate(360deg); opacity: 0; }
     }
 
-    /* Quotes fade */
+    /* Fade + elegant reveal */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(40px) scale(0.95);
+      transition: opacity 1.8s ease, transform 1.8s ease;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Zoom-in for images */
+    img {
+      opacity: 0;
+      transform: scale(0.92);
+      transition: opacity 2s ease, transform 2s ease;
+      border-radius: 1rem;
+      box-shadow: 0 8px 25px rgba(255,105,180,0.25);
+    }
+    img.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Quotes with glow */
     .quote {
-      font-size: 1.5rem;
-      font-weight: 300;
+      font-size: 1.6rem;
+      font-weight: 400;
       color: #c71585;
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(30px);
       transition: opacity 2s ease, transform 2s ease;
     }
     .quote.visible {
       opacity: 1;
       transform: translateY(0);
+      animation: romanticGlow 4s ease-in-out infinite alternate;
+    }
+    @keyframes romanticGlow {
+      0% { text-shadow: 0 0 6px rgba(255,182,193,0.3); }
+      100% { text-shadow: 0 0 20px rgba(255,105,180,0.8); }
     }
 
-    /* Overlay */
+    /* Overlay animations */
     #start-overlay {
       background: linear-gradient(135deg, #ffe6f0 0%, #fff0f5 100%);
       overflow: hidden;
+      animation: overlayFade 2s ease forwards;
+    }
+    @keyframes overlayFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .overlay-box {
+      animation: overlayZoom 1.5s ease forwards;
+    }
+    @keyframes overlayZoom {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .animate-glow {
+      animation: glow 3s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+      0% { text-shadow: 0 0 5px rgba(255,182,193,0.4), 0 0 10px rgba(255,105,180,0.6); }
+      100% { text-shadow: 0 0 20px rgba(255,105,180,0.9), 0 0 35px rgba(255,182,193,0.8); }
+    }
+    .animate-shimmer {
+      animation: shimmer 2.5s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { opacity: 0.7; }
+      50% { opacity: 1; }
+      100% { opacity: 0.7; }
+    }
+    .animate-floating {
+      animation: floating 3s ease-in-out infinite;
+    }
+    @keyframes floating {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+      100% { transform: translateY(0); }
     }
 
     /* Closing text */
     #closing-text {
       text-shadow: 0 0 10px rgba(255,105,180,0.7);
-    }
-
-    img {
+      transform: scale(0.9);
       opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 1.5s ease, transform 1.5s ease;
+      transition: opacity 2s ease, transform 2s ease;
     }
-    img.visible {
+    #closing-text.visible {
       opacity: 1;
-      transform: translateY(0);
+      transform: scale(1);
+      animation: romanticGlow 4s ease-in-out infinite alternate;
     }
   </style>
 </head>
@@ -86,18 +150,18 @@
 
   <!-- Romantic Overlay -->
   <div id="start-overlay" class="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-1000 ease-in-out opacity-100">
-    <div class="flex flex-col items-center p-6 sm:p-10 rounded-xl bg-white/70 backdrop-blur-sm shadow-xl max-w-sm sm:max-w-md mx-4 text-center">
-      <h1 class="text-4xl sm:text-5xl md:text-6xl font-extralight text-pink-700 mb-4">You're Invited</h1>
-      <p class="text-xl sm:text-2xl font-light text-pink-500 mb-6">Tap to Begin</p>
-      <button id="startButton" class="bg-pink-200 text-pink-800 font-medium py-3 px-8 rounded-full shadow-lg hover:bg-pink-300 transition-transform duration-300 transform hover:scale-105 active:scale-95">
+    <div class="overlay-box flex flex-col items-center p-6 sm:p-10 rounded-2xl bg-white/70 backdrop-blur-sm shadow-2xl max-w-sm sm:max-w-md mx-4 text-center">
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-extralight text-pink-700 mb-4 animate-glow">You're Invited</h1>
+      <p class="text-xl sm:text-2xl font-light text-pink-500 mb-6 animate-shimmer">Tap to Begin</p>
+      <button id="startButton" class="bg-pink-200 text-pink-800 font-medium py-3 px-8 rounded-full shadow-lg hover:bg-pink-300 transition-transform duration-500 transform hover:scale-110 active:scale-95 animate-floating">
         💖 Begin Journey 💖
       </button>
     </div>
   </div>
 
   <!-- Background Music -->
-  <audio id="bg-music">
-    <source src="./Ed Sheeran - Perfect.mp3" type="audio/mpeg">
+  <audio id="bg-music" loop>
+    <source src="./Ed-Sheeran-Perfect.mp3" type="audio/mpeg">
     Your browser does not support the audio tag.
   </audio>
 
@@ -108,56 +172,55 @@
   <!-- Invitation Content -->
   <div id="invitation-container" class="relative w-full flex flex-col items-center justify-start text-center py-20 px-6 opacity-0 transition-opacity duration-1000 ease-in-out">
     
-    <!-- Images + Quotes -->
-    <div class="mb-12 sm:mt-40">
-      <img src="./photos/7DecN&T.pptx.jpg" width="1700" height="720">
+    <div class="mb-12 fade-in">
+      <img src="./photos/7DecN&T.pptx-1.jpg" width="1700" height="720">
       <p class="quote mt-4">"Two souls, one journey, endless love."</p>
     </div>
 
     <div class="w-full h-px bg-stone-300 my-8"></div>
-    <div class="mb-12">
+    <div class="mb-12 fade-in">
       <img src="./photos/7DecN&T.pptx-2.jpg">
       <p class="quote mt-4">"This day marks the start of forever."</p>
     </div>
 
     <div class="w-full h-px bg-stone-300 my-8"></div>
-    <div class="mb-12">
+    <div class="mb-12 fade-in">
       <img src="./photos/7DecN&T.pptx-3.jpg">
       <p class="quote mt-4">"Together is our favorite place to be."</p>
     </div>
 
     <div class="w-full h-px bg-stone-300 my-8"></div>
-    <div class="mb-12">
+    <div class="mb-12 fade-in">
       <img src="./photos/7DecN&T.pptx-4.jpg">
       <p class="quote mt-4">"Love is not about how many days, but how deeply every moment is shared."</p>
     </div>
 
     <div class="w-full h-px bg-stone-300 my-8"></div>
-    <div class="mb-12">
+    <div class="mb-12 fade-in">
       <img src="./photos/7DecN&T.pptx -5.jpg">
       <p class="quote mt-4">"Every picture tells our love story."</p>
     </div>
 
     <div class="w-full h-px bg-stone-300 my-8"></div>
-    <div class="mb-12">
+    <div class="mb-12 fade-in">
       <img src="./photos/7DecN&T.pptx-6.jpg">
       <p class="quote mt-4">"A day to remember, a love to cherish forever."</p>
     </div>
 
     <div class="w-full h-px bg-stone-300 my-8"></div>
-    <div class="mb-12">
+    <div class="mb-12 fade-in">
       <img src="./photos/7DecN&T.pptx-7.jpg">
       <p class="quote mt-4">"Dreams do come true when we are together."</p>
     </div>
 
     <div class="w-full h-px bg-stone-300 my-8"></div>
-    <div class="mb-12">
+    <div class="mb-12 fade-in">
       <img src="./photos/7DecN&T.pptx-8.jpg">
       <p class="quote mt-4">"With you, every chapter is magical."</p>
     </div>
 
     <!-- closing screen -->
-    <div class="my-20 text-pink-700 text-4xl font-light opacity-0 transition-opacity duration-2000" id="closing-text">
+    <div class="my-20 text-pink-700 text-4xl font-light fade-in" id="closing-text">
       💍 We can’t wait to celebrate with you 💍
     </div>
   </div>
@@ -168,17 +231,6 @@
     const startOverlay = document.getElementById('start-overlay');
     const invitationContainer = document.getElementById('invitation-container');
     const bgMusic = document.getElementById('bg-music');
-    const quotes = document.querySelectorAll('.quote');
-    const images = document.querySelectorAll('img');
-    const closingText = document.getElementById('closing-text');
-    let isScrolling = false;
-    let scrollSpeed = 1.2; // Slightly faster for mobile, tweak as needed
-    let scrollTimer = null;
-
-    // Detect mobile device
-    function isMobile() {
-      return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-    }
 
     // Floating hearts generator
     function createHeart() {
@@ -203,34 +255,18 @@
       setTimeout(() => petal.remove(), 10000);
     }
 
-    // Auto Scroll
-    function doAutoScroll() {
-      if (!isScrolling) return;
-      const currentScroll = window.scrollY;
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-
-      // reveal quotes and images
-      [...quotes, ...images].forEach(el => {
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight * 0.85) {
-          el.classList.add('visible');
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
         }
       });
+    }, { threshold: 0.2 });
 
-      if (currentScroll >= maxScroll - 2) {
-        isScrolling = false;
-        closingText.classList.add('opacity-100');
-        return;
-      }
-      window.scrollBy(0, scrollSpeed);
-
-      // Fallback: use setTimeout for mobile, requestAnimationFrame otherwise
-      if (isMobile()) {
-        scrollTimer = setTimeout(doAutoScroll, 16); // ~60fps
-      } else {
-        requestAnimationFrame(doAutoScroll);
-      }
-    }
+    document.querySelectorAll('.fade-in, .quote, img, #closing-text').forEach(el => {
+      observer.observe(el);
+    });
 
     // On start
     startButton.addEventListener('click', () => {
@@ -257,34 +293,7 @@
         setInterval(createHeart, 1200);
         setInterval(createPetal, 1500);
 
-        // Start auto scroll after gesture
-        isScrolling = true;
-        doAutoScroll();
-
-        // Extra: On iOS, if user touches the screen, keep autoscrolling active
-        if (isMobile()) {
-          window.addEventListener('touchstart', () => {
-            if (!isScrolling) {
-              isScrolling = true;
-              doAutoScroll();
-            }
-          });
-        }
-
       }, 1000);
-    });
-
-    // Clear timer on manual scroll/touch end (optional: for polish)
-    window.addEventListener('touchend', () => {
-      if (isScrolling && isMobile()) {
-        clearTimeout(scrollTimer);
-        scrollTimer = null;
-        isScrolling = false;
-        setTimeout(() => {
-          isScrolling = true;
-          doAutoScroll();
-        }, 400);
-      }
     });
   });
 </script>
