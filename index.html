@@ -163,169 +163,95 @@
   </div>
 
 <script>
-window.addEventListener('load', () => {
-  'use strict';
+  window.addEventListener('load', () => {
+    const startButton = document.getElementById('startButton');
+    const startOverlay = document.getElementById('start-overlay');
+    const invitationContainer = document.getElementById('invitation-container');
+    const bgMusic = document.getElementById('bg-music');
+    const quotes = document.querySelectorAll('.quote');
+    const images = document.querySelectorAll('img');
+    const closingText = document.getElementById('closing-text');
+    let isScrolling = false;
+    let scrollSpeed = 0.8; // smoother on mobile
 
-  const startButton = document.getElementById('startButton');
-  const startOverlay = document.getElementById('start-overlay');
-  const invitationContainer = document.getElementById('invitation-container');
-  const bgMusic = document.getElementById('bg-music');
-  const quotes = Array.from(document.querySelectorAll('.quote'));
-  const images = Array.from(document.querySelectorAll('img'));
-  const closingText = document.getElementById('closing-text');
+    // Floating hearts generator
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.classList.add('floating-heart');
+      heart.innerHTML = Math.random() > 0.5 ? '💖' : '❤️';
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.fontSize = (20 + Math.random() * 20) + 'px';
+      document.getElementById('hearts-container').appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
+    }
 
-  // Tunable speed (pixels per second). Increase to scroll faster.
-  const PIXELS_PER_SECOND = 70;
+    // Falling petals generator
+    function createPetal() {
+      const petal = document.createElement('div');
+      petal.classList.add('petal');
+      petal.innerHTML = '🌸';
+      petal.style.left = Math.random() * 100 + 'vw';
+      petal.style.fontSize = (18 + Math.random() * 12) + 'px';
+      petal.style.animationDuration = (6 + Math.random() * 4) + 's';
+      document.getElementById('petals-container').appendChild(petal);
+      setTimeout(() => petal.remove(), 10000);
+    }
 
-  // Handles intervals/raf so we can cancel if needed
-  let heartInterval = null;
-  let petalInterval = null;
-  let autoScrollRaf = null;
-  let isScrolling = false;
-
-  // Small helpers
-  function createHeart() {
-    const heart = document.createElement('div');
-    heart.classList.add('floating-heart');
-    heart.innerHTML = Math.random() > 0.5 ? '💖' : '❤️';
-    heart.style.left = (Math.random() * 100) + 'vw';
-    heart.style.fontSize = (20 + Math.random() * 20) + 'px';
-    document.getElementById('hearts-container').appendChild(heart);
-    setTimeout(() => heart.remove(), 7000);
-  }
-  function createPetal() {
-    const petal = document.createElement('div');
-    petal.classList.add('petal');
-    petal.innerHTML = '🌸';
-    petal.style.left = (Math.random() * 100) + 'vw';
-    petal.style.fontSize = (18 + Math.random() * 12) + 'px';
-    petal.style.animationDuration = (6 + Math.random() * 4) + 's';
-    document.getElementById('petals-container').appendChild(petal);
-    setTimeout(() => petal.remove(), 11000);
-  }
-
-  // Reveal any element when it's near viewport
-  function revealVisibleElements() {
-    const threshold = window.innerHeight * 0.85;
-    [...quotes, ...images].forEach(el => {
-      const rect = el.getBoundingClientRect();
-      if (rect.top < threshold) el.classList.add('visible');
-    });
-  }
-
-  // Robust auto-scroll using requestAnimationFrame with delta time
-  function startAutoScroll() {
-    cancelAutoScroll();
-    isScrolling = true;
-    // try to ensure momentum scrolling on iOS
-    document.body.style.WebkitOverflowScrolling = 'touch';
-
-    const scroller = document.scrollingElement || document.documentElement || document.body;
-    let lastTimestamp = null;
-
-    function step(timestamp) {
+    // Auto Scroll
+    function autoScroll() {
       if (!isScrolling) return;
-      if (!lastTimestamp) lastTimestamp = timestamp;
-      const dt = timestamp - lastTimestamp;
-      lastTimestamp = timestamp;
-
-      const distance = PIXELS_PER_SECOND * (dt / 1000); // px to move this frame
-      window.scrollBy(0, distance);
-
-      revealVisibleElements();
-
-      const maxScroll = Math.max(scroller.scrollHeight - window.innerHeight, 0);
-      if (window.scrollY >= maxScroll - 1) {
-        // reached the end
-        isScrolling = false;
-        closingText.classList.add('opacity-100');
-        cancelAutoScroll();
-        return;
-      }
-      autoScrollRaf = requestAnimationFrame(step);
-    }
-
-    autoScrollRaf = requestAnimationFrame(step);
-  }
-
-  function cancelAutoScroll() {
-    if (autoScrollRaf) {
-      cancelAnimationFrame(autoScrollRaf);
-      autoScrollRaf = null;
-    }
-  }
-
-  // Wait for images to layout — avoids incorrect scrollHeight on mobile
-  function whenImagesReady(timeout = 1200) {
-    return new Promise(resolve => {
-      if (images.length === 0) return resolve();
-      let loaded = 0;
-      images.forEach(img => {
-        if (img.complete) {
-          loaded++;
-        } else {
-          img.addEventListener('load', () => {
-            loaded++;
-            if (loaded === images.length) resolve();
-          }, { once: true });
-          img.addEventListener('error', () => {
-            loaded++; // ignore failed images
-            if (loaded === images.length) resolve();
-          }, { once: true });
+      const currentScroll = window.scrollY;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      
+      // reveal quotes and images
+      [...quotes, ...images].forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.85) {
+          el.classList.add('visible');
         }
       });
-      // fallback: resolve after small timeout to avoid hanging forever
-      setTimeout(() => resolve(), timeout);
-      if (loaded === images.length) resolve();
-    });
-  }
 
-  // Start button logic
-  startButton.addEventListener('click', async () => {
-    // close overlay
-    window.scrollTo(0, 0);
-    startOverlay.classList.add('opacity-0');
-    setTimeout(() => {
-      startOverlay.style.display = 'none';
-      document.body.style.overflowY = 'auto';
-      invitationContainer.classList.remove('opacity-0');
-      invitationContainer.classList.add('opacity-100');
-    }, 300); // quicker fade-out so mobile can layout
-
-    // music fade-in (attempt playback; browsers may require the click which we have)
-    try {
-      bgMusic.volume = 0;
-      await bgMusic.play();
-      let vol = 0;
-      const fadeIn = setInterval(() => {
-        vol = Math.min(1, vol + 0.04);
-        bgMusic.volume = vol;
-        if (vol >= 1) clearInterval(fadeIn);
-      }, 150);
-    } catch (e) {
-      // playback might still fail on some devices - acceptable
-      console.warn('bgMusic.play() failed:', e);
+      if (currentScroll >= maxScroll) {
+        isScrolling = false;
+        closingText.classList.add('opacity-100');
+        return;
+      }
+      window.scrollTo(0, currentScroll + scrollSpeed);
+      requestAnimationFrame(autoScroll);
     }
 
-    // start heart & petal generators (store intervals to clear later if needed)
-    heartInterval = setInterval(createHeart, 1200);
-    petalInterval = setInterval(createPetal, 1500);
+    // Start button click
+    startButton.addEventListener('click', () => {
+      window.scrollTo(0, 0);
+      startOverlay.classList.add('opacity-0');
+      setTimeout(() => {
+        startOverlay.style.display = 'none';
+        document.body.style.overflowY = 'auto';
+        invitationContainer.classList.remove('opacity-0');
+        invitationContainer.classList.add('opacity-100');
 
-    // ensure layout is settled (images loaded) BEFORE starting auto scroll
-    await whenImagesReady(1400);
-    // short delay so mobile address bar settles
-    setTimeout(() => {
-      revealVisibleElements();
-      startAutoScroll();
-    }, 200);
+        // Music fade-in
+        bgMusic.volume = 0;
+        bgMusic.play().catch(()=>{});
+        let vol = 0;
+        let fadeIn = setInterval(() => {
+          if (vol < 1) {
+            vol += 0.02;
+            bgMusic.volume = vol;
+          } else clearInterval(fadeIn);
+        }, 200);
+
+        // Start floating hearts & petals
+        setInterval(createHeart, 1200);
+        setInterval(createPetal, 1500);
+
+        // Start auto scroll (no stop on mobile)
+        isScrolling = true;
+        autoScroll();
+
+      }, 1000);
+    });
   });
-
-  // If the user interacts (manual scroll or touch), we keep autoScroll running.
-  // If you want user touch to stop auto-scroll, uncomment the handler below:
-  // window.addEventListener('touchstart', () => { isScrolling = false; cancelAutoScroll(); }, { passive: true });
-
-});
 </script>
-
 </body>
 </html>
