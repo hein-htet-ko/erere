@@ -11,7 +11,7 @@
     body {
       font-family: 'Cormorant Garamond', serif;
       overflow-y: hidden; /* locked until start */
-      background: linear-gradient(to bottom, #fff0f5, #ffe4e1, #fff0f5);
+      background: linear-gradient(to bottom, #f9f6fa, #fdfdff, #f5f0f8); /* soft ivory + lavender */
     }
     html { scroll-behavior: smooth; }
 
@@ -19,7 +19,7 @@
     .floating-heart {
       position: fixed;
       bottom: -50px;
-      color: #ff69b4;
+      color: #a67894; /* dusty rose */
       font-size: 20px;
       animation: floatUp 6s linear infinite;
       opacity: 0.8;
@@ -36,7 +36,7 @@
     .petal {
       position: fixed;
       top: -40px;
-      color: #ffb6c1;
+      color: #c8a2c8; /* lavender petals */
       font-size: 22px;
       animation: fall 8s linear infinite;
       pointer-events: none;
@@ -65,7 +65,7 @@
       transform: scale(0.92);
       transition: opacity 2s ease, transform 2s ease;
       border-radius: 1rem;
-      box-shadow: 0 8px 25px rgba(255,105,180,0.25);
+      box-shadow: 0 8px 25px rgba(166,120,148,0.25); /* soft rose glow */
     }
     img.visible {
       opacity: 1;
@@ -76,7 +76,7 @@
     .quote {
       font-size: 1.6rem;
       font-weight: 400;
-      color: #c71585;
+      color: #6d5474; /* deep mauve */
       opacity: 0;
       transform: translateY(30px);
       transition: opacity 2s ease, transform 2s ease;
@@ -87,15 +87,16 @@
       animation: romanticGlow 4s ease-in-out infinite alternate;
     }
     @keyframes romanticGlow {
-      0% { text-shadow: 0 0 6px rgba(255,182,193,0.3); }
-      100% { text-shadow: 0 0 20px rgba(255,105,180,0.8); }
+      0% { text-shadow: 0 0 6px rgba(200,162,200,0.3); }
+      100% { text-shadow: 0 0 20px rgba(166,120,148,0.7); }
     }
 
     /* Overlay animations */
     #start-overlay {
-      background: linear-gradient(135deg, #ffe6f0 0%, #fff0f5 100%);
+      background: linear-gradient(135deg, #f6f2f7 0%, #fdfcff 100%);
       overflow: hidden;
       animation: overlayFade 2s ease forwards;
+      background-image:url(./photos/ggwp.jpg);
     }
     @keyframes overlayFade {
       from { opacity: 0; }
@@ -112,8 +113,8 @@
       animation: glow 3s ease-in-out infinite alternate;
     }
     @keyframes glow {
-      0% { text-shadow: 0 0 5px rgba(255,182,193,0.4), 0 0 10px rgba(255,105,180,0.6); }
-      100% { text-shadow: 0 0 20px rgba(255,105,180,0.9), 0 0 35px rgba(255,182,193,0.8); }
+      0% { text-shadow: 0 0 5px rgba(200,162,200,0.4), 0 0 10px rgba(166,120,148,0.6); }
+      100% { text-shadow: 0 0 20px rgba(166,120,148,0.9), 0 0 35px rgba(200,162,200,0.8); }
     }
     .animate-shimmer {
       animation: shimmer 2.5s ease-in-out infinite;
@@ -134,7 +135,7 @@
 
     /* Closing text */
     #closing-text {
-      text-shadow: 0 0 10px rgba(255,105,180,0.7);
+      text-shadow: 0 0 10px rgba(166,120,148,0.7);
       transform: scale(0.9);
       opacity: 0;
       transition: opacity 2s ease, transform 2s ease;
@@ -151,10 +152,10 @@
   <!-- Romantic Overlay -->
   <div id="start-overlay" class="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-1000 ease-in-out opacity-100">
     <div class="overlay-box flex flex-col items-center p-6 sm:p-10 rounded-2xl bg-white/70 backdrop-blur-sm shadow-2xl max-w-sm sm:max-w-md mx-4 text-center">
-      <h1 class="text-4xl sm:text-5xl md:text-6xl font-extralight text-pink-700 mb-4 animate-glow">You're Invited</h1>
+      <h1 class="text-4xl sm:text-5xl md:text-6xl font-extralight text-pink-800 mb-4 animate-glow">You're Invited</h1>
       <p class="text-xl sm:text-2xl font-light text-pink-500 mb-6 animate-shimmer">Tap to Begin</p>
-      <button id="startButton" class="bg-pink-200 text-pink-800 font-medium py-3 px-8 rounded-full shadow-lg hover:bg-pink-300 transition-transform duration-500 transform hover:scale-110 active:scale-95 animate-floating">
-        💖 Begin Journey 💖
+      <button id="startButton" class="bg-purple-100 text-pink-800 font-medium py-3 px-8 rounded-full shadow-lg hover:bg-purple-200 transition-transform duration-500 transform hover:scale-110 active:scale-95 animate-floating">
+        💜 Begin Journey 💜
       </button>
     </div>
   </div>
@@ -173,7 +174,7 @@
   <div id="invitation-container" class="relative w-full flex flex-col items-center justify-start text-center py-20 px-6 opacity-0 transition-opacity duration-1000 ease-in-out">
     
     <div class="mb-12 fade-in">
-      <img src="./photos/7DecN&T.pptx.jpg" width="1700" height="720">
+      <img src="./photos/7DecN&T.pptx-1.jpg" width="1700" height="720">
       <p class="quote mt-4">"Two souls, one journey, endless love."</p>
     </div>
 
@@ -220,7 +221,7 @@
     </div>
 
     <!-- closing screen -->
-    <div class="my-20 text-pink-700 text-4xl font-light fade-in" id="closing-text">
+    <div class="my-20 text-purple-700 text-4xl font-light fade-in" id="closing-text">
       💍 We can’t wait to celebrate with you 💍
     </div>
   </div>
@@ -236,7 +237,7 @@
     function createHeart() {
       const heart = document.createElement('div');
       heart.classList.add('floating-heart');
-      heart.innerHTML = Math.random() > 0.5 ? '💖' : '❤️';
+      heart.innerHTML = Math.random() > 0.5 ? '💜' : '🤍';
       heart.style.left = Math.random() * 100 + 'vw';
       heart.style.fontSize = (20 + Math.random() * 20) + 'px';
       document.getElementById('hearts-container').appendChild(heart);
